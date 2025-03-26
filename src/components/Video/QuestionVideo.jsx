@@ -11,12 +11,12 @@ function QuestionVideo({ lectureId, videoRef, onAnswerChange, onVideoCompleted }
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [timeLeft, setTimeLeft] = useState(30);
   const countdownTimerRef = useRef(null);
+  const [loading, setLoading] = useState(true); // Для управления состоянием загрузки вопросов
 
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
         const response = await axios.get(`${API_BASE_URL}/questions/lecture/${lectureId}`);
-
         if (response.data.length > 3) {
           const shuffled = response.data.sort(() => 0.5 - Math.random());
           setQuestions(shuffled.slice(0, 3));
@@ -25,6 +25,8 @@ function QuestionVideo({ lectureId, videoRef, onAnswerChange, onVideoCompleted }
         }
       } catch (err) {
         console.error("Błąd ładowania pytania:", err);
+      } finally {
+        setLoading(false); // Завершаем загрузку после получения вопросов
       }
     };
 
@@ -32,11 +34,10 @@ function QuestionVideo({ lectureId, videoRef, onAnswerChange, onVideoCompleted }
   }, [lectureId]);
 
   useEffect(() => {
-    if (!videoRef.current || questions.length === 0) return;
+    if (!videoRef.current || questions.length === 0 || loading) return;
 
     const checkTime = () => {
       const currentTime = Math.floor(videoRef.current.currentTime);
-
       const questionToShow = questions.find(
         (q) => q.timeInSeconds === currentTime && !answeredQuestions.has(q.id)
       );
@@ -79,7 +80,7 @@ function QuestionVideo({ lectureId, videoRef, onAnswerChange, onVideoCompleted }
         clearInterval(countdownTimerRef.current);
       }
     };
-  }, [questions, answeredQuestions, videoRef, onVideoCompleted]);
+  }, [questions, answeredQuestions, videoRef, onVideoCompleted, loading]);
 
   const handleAnswer = (questionId, selectedOption) => {
     const question = questions.find((q) => q.id === questionId);
@@ -111,22 +112,26 @@ function QuestionVideo({ lectureId, videoRef, onAnswerChange, onVideoCompleted }
 
   return (
     <div>
-      {activeQuestion && (
-        <div className="question-modal">
-          <div className="modal-content">
-            <p>
-              <strong>Pytanie:</strong> {activeQuestion.question}
-            </p>
-            <p className="countdown">Zostało czasu: {timeLeft} sek.</p>
-            <ul className="answer-list">
-              {activeQuestion.options.map((option, index) => (
-                <li key={index} onClick={() => handleAnswer(activeQuestion.id, option)}>
-                  {option}
-                </li>
-              ))}
-            </ul>
+      {loading ? (
+        <div className="loading">Загрузка вопросов...</div>
+      ) : (
+        activeQuestion && (
+          <div className="question-modal">
+            <div className="modal-content">
+              <p>
+                <strong>Pytanie:</strong> {activeQuestion.question}
+              </p>
+              <p className="countdown">Zostało czasu: {timeLeft} sek.</p>
+              <ul className="answer-list">
+                {activeQuestion.options.map((option, index) => (
+                  <li key={index} onClick={() => handleAnswer(activeQuestion.id, option)}>
+                    {option}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
-        </div>
+        )
       )}
     </div>
   );
