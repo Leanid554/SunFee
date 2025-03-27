@@ -12,6 +12,7 @@ import UtworzTest from "../../components/Admin/UtworzTest";
 import TestQuestion from "../../components/Admin/TestQuestion";
 import TestQuestionEdit from "../../components/Admin/TestQuestionEdit";
 import "./index.scss";
+import UserPassword from "../../components/Admin/UserPassword.jsx";
 
 const API_BASE_URL = process.env.REACT_APP_API_URL;
 
@@ -150,7 +151,6 @@ const AdminPage = () => {
             </ul>
           )}
         </div>
-
         <div className="admin-section">
           <h3>📚 Wykłady</h3>
           <button onClick={() => setLecturesVisible(!lecturesVisible)}>
@@ -188,15 +188,14 @@ const AdminPage = () => {
             </ul>
           )}
         </div>
-
         <div className="admin-section">
           <h3>👤 Użytkowniki</h3>
           <button onClick={() => setUsersVisible(!usersVisible)}>
             {usersVisible ? "Ukryj" : "Pokaz"}
           </button>
           {usersVisible && <UserList users={users} />}
+          <UserPassword users={users} />
         </div>
-
         <div className="admin-section">
           <h3>📊 Statystyki użytkownika</h3>
           <button onClick={() => setStatsVisible(!statsVisible)}>
@@ -204,7 +203,6 @@ const AdminPage = () => {
           </button>
           {statsVisible && <UserStats users={users} />}
         </div>
-
         <div className="admin-section">
           <h3>📝 Testy</h3>
           <button
