@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import axios from "axios";
 import LoginForm from "../../components/Login/LoginForm";
-import { setToken } from "./TokenUtils";
+import { setToken, decodeToken } from "./TokenUtils";
 import "./index.scss";
 
 const API_URL = process.env.REACT_APP_API_URL;
@@ -52,6 +52,17 @@ function LoginPage({ setAuth }) {
 
       if (response.status === 201) {
         const { accessToken } = response.data;
+        const decoded = decodeToken(accessToken);
+
+        if (decoded?.role === "zablokowany") {
+          setErrors((prevErrors) => ({
+            ...prevErrors,
+            server: "Twoje konto zostało zablokowane.",
+          }));
+          setLoading(false);
+          return;
+        }
+
         setToken(accessToken);
         setAuth(true);
         navigate("/main");

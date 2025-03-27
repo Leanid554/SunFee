@@ -2,9 +2,14 @@ import { jwtDecode } from "jwt-decode";
 
 export const setToken = (accessToken) => {
   if (accessToken) {
+    const decoded = decodeToken(accessToken);
+
+    if (decoded?.role === "zablokowany") {
+      return;
+    }
+
     sessionStorage.setItem("accessToken", accessToken);
 
-    const decoded = decodeToken(accessToken);
     if (decoded?.sub) {
       sessionStorage.setItem("userId", decoded.sub);
     }
@@ -34,14 +39,13 @@ export const removeTokens = () => {
 export const isAuthenticated = () => {
   const userId = getUserId();
   const role = getRole();
-  return Boolean(userId && role);
+  return Boolean(userId && role && role !== "zablokowany");
 };
 
 export const decodeToken = (token) => {
   try {
     return jwtDecode(token);
   } catch (error) {
-    console.error("Błąd dekodowania tokenа:", error);
     return null;
   }
 };
