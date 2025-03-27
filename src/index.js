@@ -18,6 +18,7 @@ import LoginPage from "./pages/Login/LoginPage";
 import WebSocket from "./components/WebSocket";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { isAuthenticated } from "./pages/Login/TokenUtils";
+import RksPage from "./pages/RksPage/RksPage";
 
 function App() {
   const [auth, setAuth] = useState(isAuthenticated());
@@ -55,6 +56,8 @@ function App() {
               element={<ProtectedRoute element={<AdminPage />} />}
             />
             <Route path="*" element={<Navigate to="/main" />} />
+            <Route path="/rkspage" element={<RksPage />} />
+
           </>
         )}
       </Routes>

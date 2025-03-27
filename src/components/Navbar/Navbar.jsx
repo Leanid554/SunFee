@@ -37,14 +37,22 @@ export default function Navbar({ setAuth }) {
               <div className="email">{email}</div>
             </div>
           )}
+
         {userRole && location.pathname !== "/login" && (
           <button className="logout-button" onClick={handleLogout}>
             Logout
           </button>
         )}
+
+       
         {userRole === "administrator" && location.pathname !== "/admin" && (
           <Link to="/admin" className="admin-button">
             Admin
+          </Link>
+        )}
+        {userRole === "rks" && location.pathname !== "/rkspage" && (
+          <Link to="/rkspage" className="admin-button">
+            RKS
           </Link>
         )}
       </div>
