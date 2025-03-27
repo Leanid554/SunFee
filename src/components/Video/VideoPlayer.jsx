@@ -40,9 +40,7 @@ const VideoPlayer = React.forwardRef((props, ref) => {
   if (!selectedLecture) return <p>Nie znaleziono wykładu.</p>;
 
   return (
-    <div
-      style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
-    >
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
       <h1>{selectedLecture.title}</h1>
       {selectedLecture.videoUrl ? (
         <video
@@ -50,6 +48,14 @@ const VideoPlayer = React.forwardRef((props, ref) => {
           {...props}
           style={{ width: "100%", display: "block" }}
           controls
+          controlsList="nodownload"
+          onContextMenu={(e) => e.preventDefault()} // Блокировка ПКМ
+          onKeyDown={(e) => {
+            if (e.ctrlKey && (e.key === "s" || e.key === "S")) {
+              e.preventDefault();
+            }
+          }} // Блокировка Ctrl + S
+          draggable="false" // Отключение перетаскивания
         >
           <source
             src={`${API_BASE_URL}${selectedLecture.videoUrl}`}
