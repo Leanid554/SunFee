@@ -194,7 +194,7 @@ const AdminPage = () => {
             {usersVisible ? "Ukryj" : "Pokaz"}
           </button>
           {usersVisible && <UserList users={users} />}
-          <UserPassword users={users} />
+          {usersVisible && <UserPassword users={users} />}
         </div>
         <div className="admin-section">
           <h3>📊 Statystyki użytkownika</h3>
