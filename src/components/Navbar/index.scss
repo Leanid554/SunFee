@@ -1,8 +1,7 @@
 .navbar {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between; // Оставили space-between для разделения лого и правой части
   align-items: center;
-  position: relative;
   padding: 10px 20px;
 }
 
@@ -11,11 +10,16 @@
   padding-left: 20px;
 }
 
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 20px; // Добавили промежуток между элементами правой части
+}
+
 .position-navbar {
   width: 20%;
   max-width: 200px;
   min-width: 120px;
-  margin-right: 40px;
   text-align: center;
   border-bottom: 1px solid red;
   color: rgb(0, 0, 0);
@@ -35,9 +39,6 @@
 }
 
 .admin-button {
-  position: absolute;
-  right: 20px;
-  top: 10px;
   background-color: #ff4d4d;
   color: white;
   padding: 8px 15px;
@@ -50,4 +51,20 @@
 
 .admin-button:hover {
   background-color: #cc0000;
+}
+
+.logout-button {
+  background-color: #666;
+  color: white;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.logout-button:hover {
+  background-color: #444;
 }

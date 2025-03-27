@@ -32,8 +32,7 @@ function App() {
   return (
     <>
       <WebSocket />
-      <Navbar />
-      {auth}
+      <Navbar setAuth={setAuth} />
       <Routes>
         {!auth ? (
           <>
