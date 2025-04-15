@@ -31,11 +31,12 @@ const AdminPage = () => {
   const [editingTestId, setEditingTestId] = useState(null);
   const [selectedBlockId, setSelectedBlockId] = useState(null);
 
-  // Новые состояния для статистики блоков
+ 
   const [roles, setRoles] = useState([]);
   const [selectedRole, setSelectedRole] = useState("");
   const [roleBlocks, setRoleBlocks] = useState([]);
   const [hardestLectureByBlock, setHardestLectureByBlock] = useState({});
+  const [hardestBlock, setHardestBlock] = useState(null); // Новое состояние для самого сложного блока
   const [blockStatsVisible, setBlockStatsVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -108,25 +109,38 @@ const AdminPage = () => {
   };
 
   useEffect(() => {
-    if (!selectedRole) return;
+    if (!selectedRole) {
+      setRoleBlocks([]);
+      setHardestBlock(null);
+      return;
+    }
 
-    const fetchBlocksByRole = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await axios.post(`${API_BASE_URL}/blocks/role`, {
-          roleName: selectedRole,
-        });
-        setRoleBlocks(response.data || []);
+        setError(null);
+
+        const [blocksRes, hardestBlockRes] = await Promise.all([
+          axios.post(`${API_BASE_URL}/blocks/role`, {
+            roleName: selectedRole,
+          }),
+          axios.post(`${API_BASE_URL}/blocks/most-difficult/role`, {
+            roleName: selectedRole,
+          }),
+        ]);
+
+        setRoleBlocks(blocksRes.data || []);
         setHardestLectureByBlock({});
+        setHardestBlock(hardestBlockRes.data || null);
       } catch (err) {
-        setError("Błąd podczas ładowania bloków");
+        setError("Błąd podczas ładowania bloków lub najtrudniejszego bloku");
         console.error(err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchBlocksByRole();
+    fetchData();
   }, [selectedRole]);
 
   const deleteLecture = async (lectureId) => {
@@ -166,6 +180,7 @@ const AdminPage = () => {
     setSelectedRole(event.target.value);
     setRoleBlocks([]);
     setHardestLectureByBlock({});
+    setHardestBlock(null);
     setError(null);
   };
 
@@ -181,7 +196,7 @@ const AdminPage = () => {
         [blockId]: response.data,
       }));
     } catch (err) {
-      setError(err.response.data.message);
+      setError(err.response?.data?.message || "Błąd podczas ładowania lekcji");
       console.error(err);
     } finally {
       setLoading(false);
@@ -364,9 +379,9 @@ const AdminPage = () => {
             </div>
           )}
         </div>
-        {/* Новая секция для статистики блоков */}
+        
         <div className="admin-section">
-          <h3>📈 Statystyki Lekcij</h3>
+          <h3>📈 Statystyki Lekcji i Bloku</h3>
           <button onClick={() => setBlockStatsVisible(!blockStatsVisible)}>
             {blockStatsVisible ? "Ukryj" : "Pokaz"}
           </button>
@@ -454,6 +469,19 @@ const AdminPage = () => {
               ) : (
                 !loading &&
                 selectedRole && <div>Brak bloków dla wybranej roli</div>
+              )}
+
+              {selectedRole && hardestBlock && (
+                <div className="hardest-block-container">
+                  <h4>🔥 Najtrudniejszy blok dla roli: {selectedRole}</h4>
+                  <p>
+                    <strong>Tytuł:</strong> {hardestBlock.title}
+                  </p>
+                  <p>
+                    <strong>Całkowita liczba prób:</strong>{" "}
+                    {hardestBlock.totalAttempts}
+                  </p>
+                </div>
               )}
             </div>
           )}
