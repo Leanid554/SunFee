@@ -11,6 +11,7 @@ const RksPage = () => {
   const [blocks, setBlocks] = useState([]);
   const [users, setUsers] = useState([]);
   const [hardestLectureByBlock, setHardestLectureByBlock] = useState({});
+  const [hardestBlock, setHardestBlock] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -34,23 +35,32 @@ const RksPage = () => {
   useEffect(() => {
     if (!selectedRole) return;
 
-    const fetchBlocksByRole = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await axios.post(`${API_BASE_URL}/blocks/role`, {
-          roleName: selectedRole,
-        });
-        setBlocks(response.data || []);
+        setError(null);
+
+        const [blocksRes, hardestBlockRes] = await Promise.all([
+          axios.post(`${API_BASE_URL}/blocks/role`, {
+            roleName: selectedRole,
+          }),
+          axios.post(`${API_BASE_URL}/blocks/most-difficult/role`, {
+            roleName: selectedRole,
+          }),
+        ]);
+
+        setBlocks(blocksRes.data || []);
         setHardestLectureByBlock({});
+        setHardestBlock(hardestBlockRes.data || null);
       } catch (err) {
-        setError("Błąd podczas ładowania bloków");
+        setError("Błąd podczas ładowania bloków lub najtrudniejszego bloku");
         console.error(err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchBlocksByRole();
+    fetchData();
   }, [selectedRole]);
 
   useEffect(() => {
@@ -70,6 +80,7 @@ const RksPage = () => {
     setSelectedRole(event.target.value);
     setBlocks([]);
     setHardestLectureByBlock({});
+    setHardestBlock(null);
     setError(null);
   };
 
@@ -85,7 +96,7 @@ const RksPage = () => {
         [blockId]: response.data,
       }));
     } catch (err) {
-      setError(err.response.data.message);
+      setError(err.response?.data?.message || "Błąd podczas ładowania lekcji");
       console.error(err);
     } finally {
       setLoading(false);
@@ -95,14 +106,13 @@ const RksPage = () => {
   return (
     <div className="rks-page">
       <div className="user-stats">
-        <h2>Statystyki użytkowników</h2>
+        <h2>📊 Statystyki użytkowników</h2>
         <UserStats users={users} />
       </div>
 
-      <h1>Bloki według ról</h1>
-
       <div className="role-selector">
-        <label htmlFor="role-select">Wybierz rolę: </label>
+        <h2>📚 Statystyki lekcji i bloków</h2>
+        <label htmlFor="role-select">Wybierz rolę:</label>
         <select
           id="role-select"
           value={selectedRole}
@@ -119,12 +129,19 @@ const RksPage = () => {
       </div>
 
       {error && <div className="error-message">{error}</div>}
-
       {loading && <div className="loading">Ładowanie...</div>}
+
+      {selectedRole && hardestBlock && (
+        <div className="hardest-block-container">
+          <h2>🔥 Najtrudniejszy blok dla roli: {selectedRole}</h2>
+          <p><strong>Tytuł:</strong> {hardestBlock.title}</p>
+          <p><strong>Całkowita liczba prób:</strong> {hardestBlock.totalAttempts}</p>
+        </div>
+      )}
 
       {selectedRole && !loading && blocks.length > 0 ? (
         <div className="blocks-list">
-          <h2>Bloki dla roli: {selectedRole}</h2>
+          <h3>📦 Bloki dla roli: {selectedRole}</h3>
           <ul>
             {blocks.map((block) => (
               <li
@@ -132,10 +149,10 @@ const RksPage = () => {
                 onClick={() => handleBlockClick(block.id)}
                 className="block-item"
               >
-                <h3>{block.title}</h3>
+                <h4>{block.title}</h4>
                 {hardestLectureByBlock[block.id] && (
                   <div className="hardest-lecture">
-                    <h4>Najtrudniejsza lekcja</h4>
+                    <h5>📘 Najtrudniejsza lekcja</h5>
                     <p>
                       <strong>Tytuł:</strong>{" "}
                       {hardestLectureByBlock[block.id].title}
@@ -150,23 +167,13 @@ const RksPage = () => {
                     </p>
                     {hardestLectureByBlock[block.id].topUser ? (
                       <div>
-                        <p>
-                          <strong>Najwięcej prób:</strong>
-                        </p>
-                        <p>
-                          Użytkownik:{" "}
-                          {hardestLectureByBlock[block.id].topUser.name}
-                        </p>
-                        <p>
-                          Email: {hardestLectureByBlock[block.id].topUser.email}
-                        </p>
-                        <p>
-                          Próby:{" "}
-                          {hardestLectureByBlock[block.id].topUser.attempts}
-                        </p>
+                        <p><strong>Użytkownik z największą liczbą prób:</strong></p>
+                        <p>Imię: {hardestLectureByBlock[block.id].topUser.name}</p>
+                        <p>Email: {hardestLectureByBlock[block.id].topUser.email}</p>
+                        <p>Próby: {hardestLectureByBlock[block.id].topUser.attempts}</p>
                       </div>
                     ) : (
-                      <p>Brak danych o użytkowniku z największą liczbą prób</p>
+                      <p>Brak danych o użytkowniku</p>
                     )}
                   </div>
                 )}
@@ -175,7 +182,8 @@ const RksPage = () => {
           </ul>
         </div>
       ) : (
-        !loading && selectedRole && <div>Brak bloków dla wybranej roli</div>
+        !loading &&
+        selectedRole && <div>Brak bloków dla wybranej roli</div>
       )}
     </div>
   );

@@ -366,7 +366,7 @@ const AdminPage = () => {
         </div>
         {/* Новая секция для статистики блоков */}
         <div className="admin-section">
-          <h3>📈 Statystyki bloków</h3>
+          <h3>📈 Statystyki Lekcij</h3>
           <button onClick={() => setBlockStatsVisible(!blockStatsVisible)}>
             {blockStatsVisible ? "Ukryj" : "Pokaz"}
           </button>
