@@ -43,7 +43,9 @@ const UserStats = ({ users }) => {
     visitPage * ITEMS_PER_PAGE
   );
 
-  const totalVisitPages = Math.ceil((stats?.visits?.length || 0) / ITEMS_PER_PAGE);
+  const totalVisitPages = Math.ceil(
+    (stats?.visits?.length || 0) / ITEMS_PER_PAGE
+  );
 
   const SectionButton = ({ name, label }) => (
     <button
@@ -89,11 +91,14 @@ const UserStats = ({ users }) => {
 
           {activeSection === "visits" && (
             <div className="section-content">
-              <h4>📅 Wizyty (strona {visitPage}/{totalVisitPages})</h4>
+              <h4>
+                📅 Wizyty (Strona {visitPage} z {totalVisitPages})
+              </h4>
               <ul>
                 {paginatedVisits.map((visit, index) => (
                   <li key={index}>
-                    Wejście: {new Date(visit.entryTime).toLocaleString()} | Wyjście:{" "}
+                    Wejście: {new Date(visit.entryTime).toLocaleString()} |
+                    Wyjście:{" "}
                     {visit.exitTime
                       ? new Date(visit.exitTime).toLocaleString()
                       : "Nadal w systemie"}
@@ -108,9 +113,13 @@ const UserStats = ({ users }) => {
                   >
                     ⬅
                   </button>
-                  <span>{visitPage}</span>
+                  <span>
+                    Strona {visitPage} z {totalVisitPages}
+                  </span>
                   <button
-                    onClick={() => setVisitPage((p) => Math.min(p + 1, totalVisitPages))}
+                    onClick={() =>
+                      setVisitPage((p) => Math.min(p + 1, totalVisitPages))
+                    }
                     disabled={visitPage === totalVisitPages}
                   >
                     ➡
@@ -126,7 +135,8 @@ const UserStats = ({ users }) => {
               <ul>
                 {stats.blockVisits.map((block) => (
                   <li key={block.blockId}>
-                    {block.block.title} | {block.completed ? "✅ Zdany" : "❌ Nie zdany"}
+                    {block.block.title} |{" "}
+                    {block.completed ? "✅ Zdany" : "❌ Nie zdany"}
                   </li>
                 ))}
               </ul>
@@ -156,8 +166,8 @@ const UserStats = ({ users }) => {
                 {stats.lectureProgress.map((progress) => (
                   <li key={progress.lectureId}>
                     {progress.lecture.title} -{" "}
-                    {progress.passed ? "✅ Zaliczone" : "❌ Nie zaliczone"} (Próby:{" "}
-                    {progress.attempts})
+                    {progress.passed ? "✅ Zaliczone" : "❌ Nie zaliczone"}{" "}
+                    (Próby: {progress.attempts})
                   </li>
                 ))}
               </ul>

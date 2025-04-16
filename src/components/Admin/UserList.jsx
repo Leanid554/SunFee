@@ -4,7 +4,7 @@ import axios from "axios";
 const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 const USERS_PER_PAGE = 10;
 
-const UserList = ({ users }) => {
+const UserList = ({ users = [] }) => {
   const [userList, setUserList] = useState(users);
   const [roles, setRoles] = useState([]);
   const [selectedRole, setSelectedRole] = useState({});
@@ -18,6 +18,7 @@ const UserList = ({ users }) => {
         const response = await axios.get(`${API_BASE_URL}/roles/all`);
         setRoles(response.data);
       } catch (error) {
+        console.error("Error fetching roles:", error);
         alert("Błąd przy pobieraniu ról");
       }
     };
@@ -25,20 +26,32 @@ const UserList = ({ users }) => {
     fetchRoles();
   }, []);
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (resetPage = false) => {
     try {
       const response = await axios.get(`${API_BASE_URL}/users`);
-      setUserList(response.data);
-      setCurrentPage(1); // reset to page 1 after reload
+      let updatedUserList = response.data;
+
+      if (filterRole) {
+        updatedUserList = updatedUserList.filter(
+          (user) => user.role?.name === filterRole
+        );
+      }
+
+      setUserList(updatedUserList);
+      if (resetPage) {
+        setCurrentPage(1);
+      }
     } catch (error) {
+      console.error("Error fetching users:", error);
       alert("Błąd przy pobieraniu użytkowników");
     }
   };
 
   useEffect(() => {
-    const intervalId = setInterval(fetchUsers, 5000);
+    fetchUsers();
+    const intervalId = setInterval(() => fetchUsers(), 5000);
     return () => clearInterval(intervalId);
-  }, []);
+  }, [filterRole]);
 
   const handleBlockUser = async (userId) => {
     try {
@@ -47,24 +60,30 @@ const UserList = ({ users }) => {
       );
       if (response.status === 200) {
         alert("Użytkownik został zablokowany!");
-        fetchUsers();
+        await fetchUsers();
       }
     } catch (error) {
-      alert("Błąd przy blokowaniu użytkownika");
+      console.error("Error blocking user:", error);
+      alert("Błąd przy блокowaniu użytkownika");
     }
   };
 
   const handleUnblockUser = async (userId) => {
     const newRole = selectedRole[userId];
+    if (!newRole) {
+      alert("Proszę wybrać rolę przed odblokowaniem");
+      return;
+    }
     try {
       const response = await axios.post(
         `${API_BASE_URL}/roles/assign/${userId}/${newRole}`
       );
       if (response.status === 200) {
         alert("Użytkownik został odblokowany i rola została zmieniona!");
-        fetchUsers();
+        await fetchUsers();
       }
     } catch (error) {
+      console.error("Error unblocking user:", error);
       alert("Błąd przy odblokowywaniu użytkownika");
     }
   };
@@ -83,19 +102,35 @@ const UserList = ({ users }) => {
     }));
   };
 
-  const handleFilterByRole = () => {
-    if (!filterRole) return;
-    const filtered = users.filter((user) => user.role.name === filterRole);
+  const handleRoleFilterChange = (e) => {
+    const selectedRole = e.target.value;
+    setFilterRole(selectedRole);
+
+    if (!selectedRole) {
+      fetchUsers(true);
+      return;
+    }
+
+    const filtered = userList.filter(
+      (user) => user.role?.name === selectedRole
+    );
     setUserList(filtered);
     setCurrentPage(1);
+  };
+
+  const handleShowAll = () => {
+    setFilterRole("");
+    fetchUsers(true);
   };
 
   const sortedUsers = [...userList].sort((a, b) => {
     const { field, order } = sortBy;
     if (field === "role") {
+      const roleA = a.role?.name || "";
+      const roleB = b.role?.name || "";
       return order === "asc"
-        ? a.role.name.localeCompare(b.role.name)
-        : b.role.name.localeCompare(a.role.name);
+        ? roleA.localeCompare(roleB)
+        : roleB.localeCompare(roleA);
     }
     if (field === "id") {
       return order === "asc" ? a.id - b.id : b.id - a.id;
@@ -113,10 +148,7 @@ const UserList = ({ users }) => {
 
       <div style={{ marginBottom: "1rem" }}>
         <label>Filtruj według roli: </label>
-        <select
-          value={filterRole}
-          onChange={(e) => setFilterRole(e.target.value)}
-        >
+        <select value={filterRole} onChange={handleRoleFilterChange}>
           <option value="">-- Wybierz rolę --</option>
           {roles.map((role) => (
             <option key={role.name} value={role.name}>
@@ -124,10 +156,7 @@ const UserList = ({ users }) => {
             </option>
           ))}
         </select>
-        <button onClick={handleFilterByRole}>Pokaż użytkowników z rolą</button>
-        <button onClick={fetchUsers} style={{ marginLeft: "1rem" }}>
-          🔄 Pokaż wszystkich
-        </button>
+        <button onClick={handleShowAll}>🔄 Pokaż wszystkich</button>
       </div>
 
       <table>
@@ -144,16 +173,7 @@ const UserList = ({ users }) => {
               </button>
             </th>
             <th>E-mail</th>
-            <th>
-              Rola{" "}
-              <button onClick={() => handleSort("role")}>
-                {sortBy.field === "role"
-                  ? sortBy.order === "asc"
-                    ? "⬆️"
-                    : "⬇️"
-                  : "↕️"}
-              </button>
-            </th>
+            <th>Rola</th>
             <th>Akcje</th>
           </tr>
         </thead>
@@ -162,9 +182,9 @@ const UserList = ({ users }) => {
             <tr key={user.id}>
               <td>{user.id}</td>
               <td>{user.email}</td>
-              <td>{user.role.name}</td>
+              <td>{user.role?.name || "Brak roli"}</td>
               <td>
-                {user.role.name === "zablokowany" ? (
+                {user.role?.name === "zablokowany" ? (
                   <div>
                     <select
                       value={selectedRole[user.id] || ""}
@@ -173,11 +193,13 @@ const UserList = ({ users }) => {
                       }
                     >
                       <option value="">Wybierz rolę</option>
-                      {roles.map((role) => (
-                        <option key={role.name} value={role.name}>
-                          {role.name}
-                        </option>
-                      ))}
+                      {roles
+                        .filter((role) => role.name !== "zablokowany")
+                        .map((role) => (
+                          <option key={role.name} value={role.name}>
+                            {role.name}
+                          </option>
+                        ))}
                     </select>
                     <button
                       onClick={() => handleUnblockUser(user.id)}
@@ -204,7 +226,6 @@ const UserList = ({ users }) => {
         </tbody>
       </table>
 
-      {/* Pagination */}
       <div style={{ marginTop: "1rem" }}>
         <button
           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
