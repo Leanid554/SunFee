@@ -4,12 +4,16 @@ import "./UserStats.css";
 
 const API_BASE_URL = process.env.REACT_APP_API_URL;
 
+const ITEMS_PER_PAGE = 10;
+
 const UserStats = ({ users }) => {
   const [selectedEmail, setSelectedEmail] = useState("");
   const [stats, setStats] = useState(null);
-  const [testResults, setTestResults] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const [activeSection, setActiveSection] = useState(null);
+  const [visitPage, setVisitPage] = useState(1);
 
   const fetchStats = async () => {
     if (!selectedEmail) {
@@ -19,43 +23,36 @@ const UserStats = ({ users }) => {
 
     setLoading(true);
     setError(null);
+    setStats(null);
+    setActiveSection(null);
 
     try {
       const response = await axios.post(`${API_BASE_URL}/user-stats`, {
         email: selectedEmail,
       });
-
       setStats(response.data);
-
-      if (response.data.blockVisits) {
-        const testResultsData = {};
-
-        for (const block of response.data.blockVisits) {
-          try {
-            const testResponse = await axios.get(
-              `${API_BASE_URL}/block-test/progress/${response.data.userId}/${block.blockId}`
-            );
-
-            testResultsData[block.blockId] = {
-              passed: testResponse.data.passed ? "✅ Zdany" : "❌ Nie zdany",
-              attempts: testResponse.data.attempts || 0,
-            };
-          } catch (err) {
-            testResultsData[block.blockId] = {
-              passed: "⏳ Brak danych",
-              attempts: "N/A",
-            };
-          }
-        }
-
-        setTestResults(testResultsData);
-      }
     } catch (err) {
       setError("Nie udało się załadować statystyk.");
     } finally {
       setLoading(false);
     }
   };
+
+  const paginatedVisits = stats?.visits?.slice(
+    (visitPage - 1) * ITEMS_PER_PAGE,
+    visitPage * ITEMS_PER_PAGE
+  );
+
+  const totalVisitPages = Math.ceil((stats?.visits?.length || 0) / ITEMS_PER_PAGE);
+
+  const SectionButton = ({ name, label }) => (
+    <button
+      className={activeSection === name ? "active" : ""}
+      onClick={() => setActiveSection(activeSection === name ? null : name)}
+    >
+      {label}
+    </button>
+  );
 
   return (
     <div className="user-stats">
@@ -75,57 +72,97 @@ const UserStats = ({ users }) => {
           ))}
         </select>
       </label>
+
       <button onClick={fetchStats}>📩 Uzyskaj statystyki</button>
 
       {loading && <p>Ładowanie...</p>}
       {error && <p style={{ color: "red" }}>{error}</p>}
 
       {stats && (
-        <div className="stats-data">
-          <h4>📅 Wizyty:</h4>
-          <ul>
-            {stats.visits.map((visit, index) => (
-              <li key={index}>
-                Wejście: {new Date(visit.entryTime).toLocaleString()} | Wyjście:{" "}
-                {visit.exitTime
-                  ? new Date(visit.exitTime).toLocaleString()
-                  : "Nadal w systemie"}
-              </li>
-            ))}
-          </ul>
+        <div className="stats-sections">
+          <div className="section-buttons">
+            <SectionButton name="visits" label="📅 Wizyty" />
+            <SectionButton name="blocks" label="📦 Bloki" />
+            <SectionButton name="tests" label="📝 Testy" />
+            <SectionButton name="lectures" label="📚 Wykłady" />
+          </div>
 
-          <h4>📦 Bloki:</h4>
-          <ul>
-            {stats.blockVisits.map((block) => (
-              <li key={block.blockId}>
-                {block.block.title} |{" "}
-                {block.completed ? "Zdany ✅" : "Nie zdany ❌"}
-              </li>
-            ))}
-          </ul>
+          {activeSection === "visits" && (
+            <div className="section-content">
+              <h4>📅 Wizyty (strona {visitPage}/{totalVisitPages})</h4>
+              <ul>
+                {paginatedVisits.map((visit, index) => (
+                  <li key={index}>
+                    Wejście: {new Date(visit.entryTime).toLocaleString()} | Wyjście:{" "}
+                    {visit.exitTime
+                      ? new Date(visit.exitTime).toLocaleString()
+                      : "Nadal w systemie"}
+                  </li>
+                ))}
+              </ul>
+              {totalVisitPages > 1 && (
+                <div className="pagination">
+                  <button
+                    onClick={() => setVisitPage((p) => Math.max(p - 1, 1))}
+                    disabled={visitPage === 1}
+                  >
+                    ⬅
+                  </button>
+                  <span>{visitPage}</span>
+                  <button
+                    onClick={() => setVisitPage((p) => Math.min(p + 1, totalVisitPages))}
+                    disabled={visitPage === totalVisitPages}
+                  >
+                    ➡
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
 
-          <h4>📝 Testy:</h4>
-          <ul>
-            {stats.blockTestProgress.map((test) => (
-              <li key={test.blockTestId}>
-                {test.blockTest.block.title} -{" "}
-                {test.passed
-                  ? `✅ Zdany (Próby: ${test.attempts})`
-                  : `❌ Nie zdany (Próby: ${test.attempts})`}
-              </li>
-            ))}
-          </ul>
+          {activeSection === "blocks" && (
+            <div className="section-content">
+              <h4>📦 Bloki</h4>
+              <ul>
+                {stats.blockVisits.map((block) => (
+                  <li key={block.blockId}>
+                    {block.block.title} | {block.completed ? "✅ Zdany" : "❌ Nie zdany"}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
-          <h4>📚 Wykłady:</h4>
-          <ul>
-            {stats.lectureProgress.map((progress) => (
-              <li key={progress.lectureId}>
-                {progress.lecture.title} -{" "}
-                {progress.passed ? "Zaliczone ✅" : "Nie zaliczone ❌"} (Próby:{" "}
-                {progress.attempts})
-              </li>
-            ))}
-          </ul>
+          {activeSection === "tests" && (
+            <div className="section-content">
+              <h4>📝 Testy</h4>
+              <ul>
+                {stats.blockTestProgress.map((test) => (
+                  <li key={test.blockTestId}>
+                    {test.blockTest.block.title} -{" "}
+                    {test.passed
+                      ? `✅ Zdany (Próby: ${test.attempts})`
+                      : `❌ Nie zdany (Próby: ${test.attempts})`}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {activeSection === "lectures" && (
+            <div className="section-content">
+              <h4>📚 Wykłady</h4>
+              <ul>
+                {stats.lectureProgress.map((progress) => (
+                  <li key={progress.lectureId}>
+                    {progress.lecture.title} -{" "}
+                    {progress.passed ? "✅ Zaliczone" : "❌ Nie zaliczone"} (Próby:{" "}
+                    {progress.attempts})
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       )}
     </div>
