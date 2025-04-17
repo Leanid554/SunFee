@@ -9,7 +9,7 @@ const UserList = ({ users = [] }) => {
   const [roles, setRoles] = useState([]);
   const [selectedRole, setSelectedRole] = useState({});
   const [filterRole, setFilterRole] = useState("");
-  const [sortBy, setSortBy] = useState({ field: "id", order: "asc" });
+  const [sortBy, setSortBy] = useState({ field: "createdAt", order: "asc" });
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
@@ -95,10 +95,10 @@ const UserList = ({ users = [] }) => {
     }));
   };
 
-  const handleSort = (field) => {
+  const handleSort = () => {
     setSortBy((prev) => ({
-      field,
-      order: prev.field === field && prev.order === "asc" ? "desc" : "asc",
+      field: "createdAt",
+      order: prev.order === "asc" ? "desc" : "asc",
     }));
   };
 
@@ -124,18 +124,9 @@ const UserList = ({ users = [] }) => {
   };
 
   const sortedUsers = [...userList].sort((a, b) => {
-    const { field, order } = sortBy;
-    if (field === "role") {
-      const roleA = a.role?.name || "";
-      const roleB = b.role?.name || "";
-      return order === "asc"
-        ? roleA.localeCompare(roleB)
-        : roleB.localeCompare(roleA);
-    }
-    if (field === "id") {
-      return order === "asc" ? a.id - b.id : b.id - a.id;
-    }
-    return 0;
+    const dateA = new Date(a.createdAt);
+    const dateB = new Date(b.createdAt);
+    return sortBy.order === "asc" ? dateA - dateB : dateB - dateA;
   });
 
   const totalPages = Math.ceil(sortedUsers.length / USERS_PER_PAGE);
@@ -162,18 +153,15 @@ const UserList = ({ users = [] }) => {
       <table>
         <thead>
           <tr>
-            <th>
-              ID{" "}
-              <button onClick={() => handleSort("id")}>
-                {sortBy.field === "id"
-                  ? sortBy.order === "asc"
-                    ? "⬆️"
-                    : "⬇️"
-                  : "↕️"}
-              </button>
-            </th>
+            <th>ID</th>
             <th>E-mail</th>
             <th>Rola</th>
+            <th>
+              Data utworzenia{" "}
+              <button onClick={handleSort}>
+                {sortBy.order === "asc" ? "⬆️" : "⬇️"}
+              </button>
+            </th>
             <th>Akcje</th>
           </tr>
         </thead>
@@ -183,6 +171,15 @@ const UserList = ({ users = [] }) => {
               <td>{user.id}</td>
               <td>{user.email}</td>
               <td>{user.role?.name || "Brak roli"}</td>
+              <td>
+                {user.createdAt
+                  ? new Date(user.createdAt).toLocaleDateString("pl-PL", {
+                      day: "2-digit",
+                      month: "long",
+                      year: "numeric",
+                    })
+                  : "Brak daty"}
+              </td>
               <td>
                 {user.role?.name === "zablokowany" ? (
                   <div>
