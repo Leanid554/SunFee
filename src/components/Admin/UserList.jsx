@@ -148,6 +148,7 @@ const UserList = ({ users = [] }) => {
           ))}
         </select>
         <button onClick={handleShowAll}>🔄 Pokaż wszystkich</button>
+        <button>🔄 Zgeneruj Xls</button>
       </div>
 
       <table>
