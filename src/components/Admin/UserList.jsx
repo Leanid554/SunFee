@@ -11,6 +11,8 @@ const UserList = ({ users = [] }) => {
   const [filterRole, setFilterRole] = useState("");
   const [sortBy, setSortBy] = useState({ field: "createdAt", order: "asc" });
   const [currentPage, setCurrentPage] = useState(1);
+  const [reportYear, setReportYear] = useState(new Date().getFullYear());
+  const [reportMonth, setReportMonth] = useState(new Date().getMonth() + 1);
 
   useEffect(() => {
     const fetchRoles = async () => {
@@ -64,7 +66,7 @@ const UserList = ({ users = [] }) => {
       }
     } catch (error) {
       console.error("Error blocking user:", error);
-      alert("Błąd przy блокowaniu użytkownika");
+      alert("Błąd przy blokowaniu użytkownika");
     }
   };
 
@@ -123,6 +125,49 @@ const UserList = ({ users = [] }) => {
     fetchUsers(true);
   };
 
+  const handleGenerateExcel = async () => {
+    if (!filterRole) {
+      alert("Proszę wybrać rolę przed generowaniem raportu");
+      return;
+    }
+    if (!reportYear || !reportMonth) {
+      alert("Proszę wybrać rok i miesiąc");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/reports/role`,
+        {
+          roleName: filterRole,
+          year: parseInt(reportYear),
+          month: parseInt(reportMonth),
+        },
+        { responseType: "arraybuffer" }
+      );
+
+      const blob = new Blob([response.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `report_role_${filterRole}_${reportYear}_${reportMonth}.xlsx`
+      );
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      alert("Raport został wygenerowany!");
+    } catch (error) {
+      console.error("Error generating Excel report:", error);
+      alert("Błąd przy generowaniu raportu");
+    }
+  };
+
   const sortedUsers = [...userList].sort((a, b) => {
     const dateA = new Date(a.createdAt);
     const dateB = new Date(b.createdAt);
@@ -137,9 +182,23 @@ const UserList = ({ users = [] }) => {
     <div className="admin-section">
       <h3>👥 Lista użytkowników</h3>
 
-      <div style={{ marginBottom: "1rem" }}>
-        <label>Filtruj według roli: </label>
-        <select value={filterRole} onChange={handleRoleFilterChange}>
+      {/* фильтр по ролям */}
+      <div
+        style={{
+          marginBottom: "1rem",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: "10px",
+        }}
+      >
+        <label>Filtruj według roli:</label>
+        <select
+          value={filterRole}
+          onChange={handleRoleFilterChange}
+          style={{ padding: "5px", borderRadius: "4px", minWidth: "180px" }}
+        >
           <option value="">-- Wybierz rolę --</option>
           {roles.map((role) => (
             <option key={role.name} value={role.name}>
@@ -147,9 +206,59 @@ const UserList = ({ users = [] }) => {
             </option>
           ))}
         </select>
-        <button onClick={handleShowAll}>🔄 Pokaż wszystkich</button>
-        <button>🔄 Zgeneruj Xls</button>
+
+        <button
+          onClick={handleShowAll}
+          style={{
+            padding: "6px 14px",
+            borderRadius: "4px",
+            color: "white",
+            border: "none",
+            cursor: "pointer",
+            minWidth: "160px",
+          }}
+        >
+          🔄 Pokaż wszystkich
+        </button>
       </div>
+
+      <div
+        style={{
+          marginBottom: "1rem",
+          display: "flex",
+          gap: "10px",
+          alignItems: "center",
+          flexWrap: "wrap",
+        }}
+      >
+        <div>
+          <label>Rok: </label>
+          <input
+            type="number"
+            value={reportYear}
+            onChange={(e) => setReportYear(e.target.value)}
+            min="2000"
+            max={new Date().getFullYear()}
+            style={{ width: "80px", padding: "5px", borderRadius: "4px" }}
+          />
+        </div>
+        <div>
+          <label>Miesiąc: </label>
+          <select
+            value={reportMonth}
+            onChange={(e) => setReportMonth(e.target.value)}
+            style={{ padding: "5px", borderRadius: "4px" }}
+          >
+            {[...Array(12).keys()].map((m) => (
+              <option key={m + 1} value={m + 1}>
+                {new Date(0, m).toLocaleString("pl-PL", { month: "long" })}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <button onClick={handleGenerateExcel}>📊 Zgeneruj Excel</button>
 
       <table>
         <thead>
@@ -189,6 +298,11 @@ const UserList = ({ users = [] }) => {
                       onChange={(e) =>
                         handleRoleChange(user.id, e.target.value)
                       }
+                      style={{
+                        padding: "5px",
+                        borderRadius: "4px",
+                        marginRight: "5px",
+                      }}
                     >
                       <option value="">Wybierz rolę</option>
                       {roles
@@ -202,11 +316,11 @@ const UserList = ({ users = [] }) => {
                     <button
                       onClick={() => handleUnblockUser(user.id)}
                       style={{
-                        backgroundColor: "green",
+                        backgroundColor: "#28a745",
                         color: "white",
                         border: "none",
                         padding: "5px 10px",
-                        marginLeft: "5px",
+                        borderRadius: "4px",
                         cursor: "pointer",
                       }}
                     >
@@ -214,7 +328,17 @@ const UserList = ({ users = [] }) => {
                     </button>
                   </div>
                 ) : (
-                  <button onClick={() => handleBlockUser(user.id)}>
+                  <button
+                    onClick={() => handleBlockUser(user.id)}
+                    style={{
+                      backgroundColor: "#dc3545",
+                      color: "white",
+                      border: "none",
+                      padding: "5px 10px",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                    }}
+                  >
                     Zablokuj
                   </button>
                 )}
@@ -224,6 +348,7 @@ const UserList = ({ users = [] }) => {
         </tbody>
       </table>
 
+      {/* пагинация */}
       <div style={{ marginTop: "1rem" }}>
         <button
           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
