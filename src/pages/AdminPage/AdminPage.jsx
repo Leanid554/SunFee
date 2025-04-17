@@ -202,11 +202,9 @@ const AdminPage = () => {
       <h3>🛠 Dodawanie treści</h3>
       <div className="management-section">
         <div className="component-container">
-          <h4>Dodaj nowy blok</h4>
           <AddBlock blocks={blocks} setBlocks={setBlocks} />
         </div>
         <div className="component-container">
-          <h4>Dodaj nowy wykład</h4>
           <AddLecture
             blocks={blocks}
             lectures={lectures}
@@ -219,7 +217,10 @@ const AdminPage = () => {
       <h3>📦 Zarządzanie blokami</h3>
       <div className="management-section">
         <div className="component-container">
-          <button onClick={() => setBlocksVisible(!blocksVisible)} className="toggle-btn">
+          <button
+            onClick={() => setBlocksVisible(!blocksVisible)}
+            className="toggle-btn"
+          >
             {blocksVisible ? "Ukryj" : "Pokaż"}
           </button>
         </div>
@@ -229,8 +230,13 @@ const AdminPage = () => {
               <ul className="item-list">
                 {blocks.map((block) => (
                   <li key={block.id} className="item">
-                    <span>{block.title} (ID: {block.id})</span>
-                    <button onClick={() => deleteBlock(block.id)} className="delete-btn">
+                    <span>
+                      {block.title} (ID: {block.id})
+                    </span>
+                    <button
+                      onClick={() => deleteBlock(block.id)}
+                      className="delete-btn"
+                    >
                       Usuń
                     </button>
                   </li>
@@ -246,7 +252,10 @@ const AdminPage = () => {
       <h3>📚 Zarządzanie wykładami</h3>
       <div className="management-section">
         <div className="component-container">
-          <button onClick={() => setLecturesVisible(!lecturesVisible)} className="toggle-btn">
+          <button
+            onClick={() => setLecturesVisible(!lecturesVisible)}
+            className="toggle-btn"
+          >
             {lecturesVisible ? "Ukryj" : "Pokaż"}
           </button>
         </div>
@@ -264,16 +273,21 @@ const AdminPage = () => {
                       }
                       className="toggle-btn"
                     >
-                      {selectedLectureId === lecture.id ? "Ukryj" : "Pokaż"} {lecture.title}
+                      {selectedLectureId === lecture.id ? "Ukryj" : "Pokaż"}{" "}
+                      {lecture.title}
                     </button>
                     {selectedLectureId === lecture.id && (
                       <div className="lecture-details component-container">
                         <p>
-                          <strong>{lecture.title}</strong> (ID: {lecture.id}) | Blok: {getBlockTitle(lecture.blockId)}
+                          <strong>{lecture.title}</strong> (ID: {lecture.id}) |
+                          Blok: {getBlockTitle(lecture.blockId)}
                         </p>
                         <div className="lecture-actions">
                           <div className="component-container">
-                            <button onClick={() => deleteLecture(lecture.id)} className="delete-btn">
+                            <button
+                              onClick={() => deleteLecture(lecture.id)}
+                              className="delete-btn"
+                            >
                               Usuń
                             </button>
                           </div>
@@ -306,11 +320,9 @@ const AdminPage = () => {
       <h3>👤 Zarządzanie użytkownikami</h3>
       <div className="management-section">
         <div className="component-container">
-          <h4>Dodaj nowego użytkownika</h4>
           <AddUser users={users} setUsers={setUsers} />
         </div>
         <div className="component-container">
-          <h4>Lista użytkowników</h4>
           <UserList users={users} />
         </div>
         <div className="component-container">
@@ -370,18 +382,23 @@ const AdminPage = () => {
                   (test) => test.blockId === Number(selectedBlockTestId)
                 ).length > 0 ? (
                   testList
-                    .filter((test) => test.blockId === Number(selectedBlockTestId))
+                    .filter(
+                      (test) => test.blockId === Number(selectedBlockTestId)
+                    )
                     .map((test) => {
                       const block = blocks.find((b) => b.id === test.blockId);
                       const blockTitle = block ? block.title : "Nieznany blok";
                       return (
                         <option key={test.id} value={test.id}>
-                          Test dla bloku "{blockTitle}" - {test.title} (ID: {test.id})
+                          Test dla bloku "{blockTitle}" - {test.title} (ID:{" "}
+                          {test.id})
                         </option>
                       );
                     })
                 ) : (
-                  <option value="">Brak dostępnych testów dla wybranego bloku</option>
+                  <option value="">
+                    Brak dostępnych testów dla wybranego bloku
+                  </option>
                 )}
               </select>
             </div>
@@ -392,11 +409,17 @@ const AdminPage = () => {
           <div className="test-edit-section">
             <div className="component-container">
               <h4>Dodawanie pytań</h4>
-              <TestQuestion blockId={selectedBlockTestId} testId={editingTestId} />
+              <TestQuestion
+                blockId={selectedBlockTestId}
+                testId={editingTestId}
+              />
             </div>
             <div className="component-container">
               <h4>Edycja pytań testu</h4>
-              <TestQuestionEdit blockId={selectedBlockTestId} testId={editingTestId} />
+              <TestQuestionEdit
+                blockId={selectedBlockTestId}
+                testId={editingTestId}
+              />
             </div>
           </div>
         )}
@@ -406,10 +429,8 @@ const AdminPage = () => {
 
   const renderStatsManagement = () => (
     <div className="stats-management">
-      <h3>📊 Statystyki użytkownika</h3>
       <div className="management-section">
         <div className="component-container">
-          {/* <h4>Statystyki użytkowników</h4> */}
           <UserStats users={users} />
         </div>
       </div>
@@ -417,7 +438,6 @@ const AdminPage = () => {
       <h3>📈 Statystyki lekcji i bloków</h3>
       <div className="management-section">
         <div className="component-container">
-          <h4>Wybierz rolę</h4>
           <div className="role-selector component-container">
             <label htmlFor="role-select">Wybierz rolę: </label>
             <select
@@ -465,7 +485,8 @@ const AdminPage = () => {
                       <div className="hardest-lecture">
                         <h6>Najtrudniejsza lekcja</h6>
                         <p>
-                          <strong>Tytuł:</strong> {hardestLectureByBlock[block.id].title}
+                          <strong>Tytuł:</strong>{" "}
+                          {hardestLectureByBlock[block.id].title}
                         </p>
                         <p>
                           <strong>Całkowita liczba prób:</strong>{" "}
@@ -481,18 +502,23 @@ const AdminPage = () => {
                               <strong>Najwięcej prób:</strong>
                             </p>
                             <p>
-                              Użytkownik: {hardestLectureByBlock[block.id].topUser.name}
+                              Użytkownik:{" "}
+                              {hardestLectureByBlock[block.id].topUser.name}
                             </p>
                             <p>
-                              Email: {hardestLectureByBlock[block.id].topUser.email}
+                              Email:{" "}
+                              {hardestLectureByBlock[block.id].topUser.email}
                             </p>
                             <p>
-                              Próby: {hardestLectureByBlock[block.id].topUser.attempts}
+                              Próby:{" "}
+                              {hardestLectureByBlock[block.id].topUser.attempts}
                             </p>
                           </div>
                         ) : (
                           <div className="component-container">
-                            <p>Brak danych o użytkowniku z największą liczbą prób</p>
+                            <p>
+                              Brak danych o użytkowniku z największą liczbą prób
+                            </p>
                           </div>
                         )}
                       </div>
@@ -519,7 +545,8 @@ const AdminPage = () => {
               <strong>Tytuł:</strong> {hardestBlock.title}
             </p>
             <p>
-              <strong>Całkowita liczba prób:</strong> {hardestBlock.totalAttempts}
+              <strong>Całkowita liczba prób:</strong>{" "}
+              {hardestBlock.totalAttempts}
             </p>
           </div>
         )}
