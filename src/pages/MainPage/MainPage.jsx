@@ -12,6 +12,9 @@ const MainPage = () => {
   const [selectedBlock, setSelectedBlock] = useState(null);
   const [visitedBlocks, setVisitedBlocks] = useState(new Set());
 
+  const userRole = sessionStorage.getItem("role");
+  const stanowisko = sessionStorage.getItem("stanowisko");
+
   useEffect(() => {
     const userId = sessionStorage.getItem("userId");
     if (userId) fetchBlocks(userId);
@@ -34,7 +37,9 @@ const MainPage = () => {
       setBlocks(blocksData);
       setProgress(progressData);
       setVisitedBlocks(visitedSet);
-    } catch (err) {}
+    } catch (err) {
+      console.error("Error fetching blocks:", err);
+    }
   };
 
   const calculateProgress = (block) => {
@@ -69,13 +74,21 @@ const MainPage = () => {
 
     try {
       await axios.post(`${API_URL}/${blockId}/user/${userId}`, {});
-    } catch (err) {}
+    } catch (err) {
+      console.error("Error registering block visit:", err);
+    }
   };
 
   return (
     <div className="main-page">
       <div className="block-container">
-        <ProgressBar value={60} />
+        {userRole === "Doradca Energetyczny" && (
+          <>
+            <h2>{stanowisko}</h2>
+            <ProgressBar stanowisko={stanowisko} />
+          </>
+        )}
+
         <div className="block-header-row">
           <div className="block-label">Nazwa</div>
           <div className="progress-label">Postęp</div>

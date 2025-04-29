@@ -321,7 +321,7 @@ const AdminPage = () => {
       <h3>👤 Zarządzanie użytkownikami</h3>
       <div className="management-section">
         <div className="component-container">
-        <AddUser
+          <AddUser
             users={users}
             setUsers={setUsers}
             roles={roles}
@@ -332,12 +332,8 @@ const AdminPage = () => {
           <UpdateUserStanowisko users={users} setUsers={setUsers} />
         </div>
         <div className="component-container">
-          <h4>Lista użytkowników (Doradca Energetyczny)</h4>
-          <UserList
-            users={users.filter(
-              (user) => user.role.name === "Doradca Energetyczny"
-            )}
-          />
+          <h4>Lista użytkowników</h4>
+          <UserList />
         </div>
         <div className="component-container">
           <h4>Zarządzanie hasłami</h4>

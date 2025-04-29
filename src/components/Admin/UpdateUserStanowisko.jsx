@@ -3,6 +3,13 @@ import axios from "axios";
 
 const API_BASE_URL = process.env.REACT_APP_API_URL;
 
+const stanowiskoOptions = [
+  "Konsultant ds. Umawiania Spotkań",
+  "Doradca ds. Bezpośrednich Spotkań",
+  "Młodszy Doradca Energetyczny",
+  "Doradca Energetyczny",
+];
+
 const UpdateUserStanowisko = ({ users, setUsers }) => {
   const [selectedUserId, setSelectedUserId] = useState("");
   const [stanowisko, setStanowisko] = useState("");
@@ -11,7 +18,7 @@ const UpdateUserStanowisko = ({ users, setUsers }) => {
 
   const handleUpdateStanowisko = async () => {
     if (!selectedUserId || !stanowisko) {
-      setError("Wybierz użytkownika i wprowadź stanowisko");
+      setError("Wybierz użytkownika i stanowisko");
       return;
     }
 
@@ -23,9 +30,7 @@ const UpdateUserStanowisko = ({ users, setUsers }) => {
       });
       setUsers((prevUsers) =>
         prevUsers.map((user) =>
-          user.id === parseInt(selectedUserId)
-            ? { ...user, stanowisko }
-            : user
+          user.id === parseInt(selectedUserId) ? { ...user, stanowisko } : user
         )
       );
       alert("Stanowisko zaktualizowane pomyślnie");
@@ -41,7 +46,10 @@ const UpdateUserStanowisko = ({ users, setUsers }) => {
 
   return (
     <div className="update-stanowisko component-container">
-      <h4>Zaktualizuj stanowisko użytkownika</h4>
+      <h4>
+        Zaktualizuj stanowisko użytkownika (Opcja tylko dla Doradców
+        Energetycznych)
+      </h4>
       <div className="select-container">
         <select
           value={selectedUserId}
@@ -58,14 +66,24 @@ const UpdateUserStanowisko = ({ users, setUsers }) => {
             ))}
         </select>
       </div>
-      <input
-        type="text"
-        value={stanowisko}
-        onChange={(e) => setStanowisko(e.target.value)}
-        placeholder="Wprowadź nowe stanowisko"
-        disabled={loading}
-      />
+
+      <div className="select-container">
+        <select
+          value={stanowisko}
+          onChange={(e) => setStanowisko(e.target.value)}
+          disabled={loading}
+        >
+          <option value="">Wybierz nowe stanowisko</option>
+          {stanowiskoOptions.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+      </div>
+
       {error && <div className="error-message">{error}</div>}
+
       <button
         onClick={handleUpdateStanowisko}
         disabled={loading}

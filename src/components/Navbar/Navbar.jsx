@@ -14,6 +14,7 @@ export default function Navbar({ setAuth }) {
     sessionStorage.removeItem("email");
     sessionStorage.removeItem("role");
     sessionStorage.removeItem("userId");
+    sessionStorage.removeItem("stanowisko");
     setAuth(false);
     navigate("/login");
   };
