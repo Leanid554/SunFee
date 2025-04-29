@@ -21,10 +21,6 @@ export const setToken = (accessToken) => {
     if (decoded?.email) {
       sessionStorage.setItem("email", decoded.email);
     }
-
-    if (decoded?.stanowisko) {
-      sessionStorage.setItem("stanowisko", decoded.stanowisko);
-    }
   }
 };
 
@@ -38,7 +34,6 @@ export const removeTokens = () => {
   sessionStorage.removeItem("userId");
   sessionStorage.removeItem("role");
   sessionStorage.removeItem("email");
-  sessionStorage.removeItem("stanowisko");
 };
 
 export const isAuthenticated = () => {

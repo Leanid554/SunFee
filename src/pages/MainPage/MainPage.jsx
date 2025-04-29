@@ -11,14 +11,26 @@ const MainPage = () => {
   const [progress, setProgress] = useState({});
   const [selectedBlock, setSelectedBlock] = useState(null);
   const [visitedBlocks, setVisitedBlocks] = useState(new Set());
+  const [stanowisko, setStanowisko] = useState("");
 
   const userRole = sessionStorage.getItem("role");
-  const stanowisko = sessionStorage.getItem("stanowisko");
 
   useEffect(() => {
     const userId = sessionStorage.getItem("userId");
-    if (userId) fetchBlocks(userId);
+    if (userId) {
+      fetchBlocks(userId);
+      fetchStanowisko(userId);
+    }
   }, []);
+
+  const fetchStanowisko = async (userId) => {
+    try {
+      const response = await axios.get(`${API_URL}/users/${userId}/stanowisko`);
+      setStanowisko(response.data.stanowisko);
+    } catch (err) {
+      console.error("Ошибка при получении stanowisko:", err);
+    }
+  };
 
   const fetchBlocks = async (userId) => {
     try {
