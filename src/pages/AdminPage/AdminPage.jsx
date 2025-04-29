@@ -320,7 +320,12 @@ const AdminPage = () => {
       <h3>👤 Zarządzanie użytkownikami</h3>
       <div className="management-section">
         <div className="component-container">
-          <AddUser users={users} setUsers={setUsers} />
+          <AddUser
+            users={users}
+            setUsers={setUsers}
+            roles={roles}
+            setRoles={setRoles}
+          />
         </div>
         <div className="component-container">
           <UserList users={users} />

@@ -63,7 +63,7 @@ const AddLecture = ({ blocks, lectures, setLectures, addLectureToState }) => {
       />
 
       <button onClick={addLecture} disabled={loading}>
-        {loading ? "Dodatek..." : "➕ Dodać"}
+        {loading ? "Tworzenie..." : "➕ Dodać"}
       </button>
     </div>
   );

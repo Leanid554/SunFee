@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import BlockItem from "../../components/Main/BlockItem";
 import axios from "axios";
 import "./index.scss";
+import ProgressBar from "../../components/ProgressBar/ProgressBar";
 
 const API_URL = process.env.REACT_APP_API_URL;
 
@@ -39,14 +40,21 @@ const MainPage = () => {
   const calculateProgress = (block) => {
     const lectures = block.lectures || [];
     const totalLectures = lectures.length;
-    const completedLectures = lectures.filter((lecture) => lecture.isCompleted).length;
+    const completedLectures = lectures.filter(
+      (lecture) => lecture.isCompleted
+    ).length;
     const isTestPassed = block.test?.userProgress?.passed || false;
 
-    if (totalLectures > 0 && completedLectures === totalLectures && isTestPassed) {
+    if (
+      totalLectures > 0 &&
+      completedLectures === totalLectures &&
+      isTestPassed
+    ) {
       return 100;
     }
 
-    const lectureProgress = totalLectures > 0 ? (completedLectures / totalLectures) * 100 : 0;
+    const lectureProgress =
+      totalLectures > 0 ? (completedLectures / totalLectures) * 100 : 0;
     const testProgress = isTestPassed ? 100 : 0;
 
     return Math.floor(lectureProgress * 0.7 + testProgress * 0.3);
@@ -67,6 +75,7 @@ const MainPage = () => {
   return (
     <div className="main-page">
       <div className="block-container">
+        <ProgressBar value={60} />
         <div className="block-header-row">
           <div className="block-label">Nazwa</div>
           <div className="progress-label">Postęp</div>
@@ -79,7 +88,9 @@ const MainPage = () => {
         ) : (
           blocks.map((block, index) => {
             const previousBlockId = blocks[index - 1]?.id;
-            const previousBlockCompleted = previousBlockId ? (progress[previousBlockId] || 0) === 100 : true;
+            const previousBlockCompleted = previousBlockId
+              ? (progress[previousBlockId] || 0) === 100
+              : true;
 
             return (
               <BlockItem

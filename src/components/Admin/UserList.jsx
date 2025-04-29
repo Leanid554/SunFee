@@ -181,8 +181,6 @@ const UserList = ({ users = [] }) => {
   return (
     <div className="admin-section">
       <h3>👥 Lista użytkowników</h3>
-
-      {/* фильтр по ролям */}
       <div
         style={{
           marginBottom: "1rem",

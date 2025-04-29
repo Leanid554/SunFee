@@ -110,7 +110,7 @@ const AddUser = ({ roles = [], setRoles }) => {
       </select>
 
       <button onClick={addUser} disabled={loading}>
-        {loading ? "Dodatek..." : "➕ Dodać"}
+        {loading ? "Tworzenie..." : "➕ Dodać"}
       </button>
 
       <h3>Dodaj nową rolę</h3>
@@ -121,7 +121,7 @@ const AddUser = ({ roles = [], setRoles }) => {
         placeholder="Nazwa nowej roli"
       />
       <button onClick={addRole} disabled={loading}>
-        {loading ? "Dodatek..." : "➕ Dodaj rolę"}
+        {loading ? "Tworzenie..." : "➕ Dodaj rolę"}
       </button>
 
       {error && <p style={{ color: "red" }}>{error}</p>}
