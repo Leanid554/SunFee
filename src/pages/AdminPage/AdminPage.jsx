@@ -12,6 +12,7 @@ import UtworzTest from "../../components/Admin/UtworzTest";
 import TestQuestion from "../../components/Admin/TestQuestion";
 import TestQuestionEdit from "../../components/Admin/TestQuestionEdit";
 import UserPassword from "../../components/Admin/UserPassword.jsx";
+import UpdateUserStanowisko from "../../components/Admin/UpdateUserStanowisko.jsx";
 import "./index.scss";
 
 const API_BASE_URL = process.env.REACT_APP_API_URL;
@@ -320,15 +321,18 @@ const AdminPage = () => {
       <h3>👤 Zarządzanie użytkownikami</h3>
       <div className="management-section">
         <div className="component-container">
-          <AddUser
-            users={users}
-            setUsers={setUsers}
-            roles={roles}
-            setRoles={setRoles}
-          />
+          <AddUser users={users} setUsers={setUsers} />
         </div>
         <div className="component-container">
-          <UserList users={users} />
+          <UpdateUserStanowisko users={users} setUsers={setUsers} />
+        </div>
+        <div className="component-container">
+          <h4>Lista użytkowników (Doradca Energetyczny)</h4>
+          <UserList
+            users={users.filter(
+              (user) => user.role.name === "Doradca Energetyczny"
+            )}
+          />
         </div>
         <div className="component-container">
           <h4>Zarządzanie hasłami</h4>
